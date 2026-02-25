@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow p-4">
+            <h3 class="text-center mb-4">Add New Subject</h3>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <input type="text" name="name" class="form-control" placeholder="Subject Name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Exam Date</label>
+                    <input type="date" name="exam_date" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Study Hours Per Day</label>
+                    <input type="number" name="study_hours" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Difficulty</label>
+                    <select name="difficulty" class="form-control">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-custom w-100">
+                    Add Subject
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

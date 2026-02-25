@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2 class="mb-4">Your Subjects</h2>
+
+<!-- DONUT CHART -->
+<div class="card p-4 mb-4 text-center">
+    <h4 class="mb-3">Overall Progress</h4>
+    <div style="width: 350px; margin: 0 auto;">
+        <canvas id="progressChart"></canvas>
+    </div>
+</div>
+
+<!-- BAR CHART -->
+<div class="card p-4 mb-4 text-center">
+    <h4 class="mb-3">Subject-wise Progress</h4>
+    <div style="width: 600px; margin: 0 auto;">
+        <canvas id="barChart"></canvas>
+    </div>
+</div>
+
+<!-- OVERALL STATISTICS -->
+<div class="card p-4 mb-4 text-center">
+    <h4 class="mb-3">📊 Overall Statistics</h4>
+
+    <div class="row">
+        <div class="col">
+            <h5>Completed</h5>
+            <h2 class="counter" data-target="{{ total_completed }}">0</h2>
+        </div>
+        <div class="col">
+            <h5>Pending</h5>
+            <h2 class="counter" data-target="{{ total_pending }}">0</h2>
+        </div>
+    </div>
+</div>
+
+<!-- SUBJECT CARDS -->
+<div class="row">
+    {% for item in subject_data %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow p-3">
+
+                <h4>
+                    <a href="{% url 'subject_detail' item.subject.id %}" class="text-decoration-none">
+                        {{ item.subject.name }}
+                    </a>
+                </h4>
+
+                <p><strong>Exam:</strong> {{ item.subject.exam_date }}</p>
+                <p><strong>Difficulty:</strong> {{ item.subject.difficulty }}</p>
+
+                <p>
+                    {{ item.completed }} / {{ item.total }} topics completed
+                </p>
+
+                <div class="progress mb-2" style="height: 20px;">
+                    <div class="progress-bar bg-success"
+                         style="width: {{ item.progress }}%;">
+                        {{ item.progress }}%
+                    </div>
+                </div>
+
+                <!-- DELETE SUBJECT BUTTON (CORRECT PLACE INSIDE LOOP) -->
+                <form method="POST" action="{% url 'delete_subject' item.subject.id %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                            onclick="return confirm('Are you sure you want to delete this subject?')"
+                            class="btn btn-sm btn-danger mt-2">
+                        🗑 Delete Subject
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-white">No subjects added yet.</p>
+    {% endfor %}
+</div>
+
+<a href="{% url 'add_subject' %}" class="btn btn-light mt-3">➕ Add Subject</a>
+
+<!-- DONUT CHART SCRIPT -->
+<script>
+    const ctx = document.getElementById('progressChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Pending'],
+            datasets: [{
+                data: [{{ total_completed }}, {{ total_pending }}],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+</script>
+
+<!-- BAR CHART SCRIPT -->
+<script>
+    const barCtx = document.getElementById('barChart').getContext('2d');
+
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ subject_names|safe }},
+            datasets: [{
+                label: 'Progress (%)',
+                data: {{ subject_progress|safe }},
+                backgroundColor: '#6c63ff'
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+
+<!-- COUNTER ANIMATION SCRIPT -->
+<script>
+    const counters = document.querySelectorAll('.counter');
+
+    counters.forEach(counter => {
+        const updateCount = () => {
+            const target = +counter.getAttribute('data-target');
+            const count = +counter.innerText;
+            const increment = target / 50;
+
+            if (count < target) {
+                counter.innerText = Math.ceil(count + increment);
+                setTimeout(updateCount, 20);
+            } else {
+                counter.innerText = target;
+            }
+        };
+        updateCount();
+    });
+</script>
+
+{% endblock %}
